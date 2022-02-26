@@ -11,6 +11,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cors())
+
 app.get("/", function (req, res) {
 	res.send({ error: "TRUE", message: "Invalid Request" });
 });
@@ -105,9 +106,9 @@ app.post("/mentor/profile", async (req, res) => {
 		const reqData = req.body;
 		const data = await Mentor.create(reqData);
 
-		res.send({ status:200, error: false, message: "SUCCESS" });
+		res.send({ status:200, error: false, result: "Saved Your Information Succeassfully", message:'Success' });
 	} catch (error) {
-		res.send({ status:400,error: true, message: error.message });
+		res.send({ status:400,error: true, result:'Could not Save Your Information',message: error.message });
 	}
 });
 
@@ -117,10 +118,15 @@ app.post("/mentee/profile", async (req, res) => {
 		const reqData = req.body;
 		const data = await Mentee.create(reqData);
 
-		res.send({ status:200, error: false, message: "SUCCESS" });
+		res.send({ status:200, error: false, result: "Saved Your Information Succeassfully", message:'Success' });
 	} catch (error) {
-		res.send({ status:400,error: true, message: error.message });
+		res.send({ status:400,error: true, result:'Could not Save Your Information',message: error.message });
 	}
 });
-
+/* MENTEE PROFILE */
+app.get("/mentor-requests",async(req,res)=>{
+	const mentor_requests = await Mentor.find({role:'mentor',status:false});
+	res.json(mentor_requests);
+});
+ 
 module.exports = app;
