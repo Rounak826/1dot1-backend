@@ -25,6 +25,7 @@ const mentorSchema = new mongoose.Schema({
 	twitter: { type: String, default: null },
 	profile_pic_source: { type: Buffer, default: null },
 	resume_source: { type: Buffer, default: null },
+	status: { type: String, default: null },
 });
 
 module.exports = mongoose.model("mentor", mentorSchema);
