@@ -7,7 +7,9 @@ const jwt = require("jsonwebtoken");
 const User = require("./model/user");
 const Mentor = require("./model/mentor");
 const Mentee = require("./model/mentee");
-const cors = require('cors')
+const Category = require("./model/category");
+const cors = require('cors');
+
 const app = express();
 
 app.use(express.json());
@@ -138,7 +140,19 @@ app.post("/mentor/profile", async (req, res) => {
 		reqData.status = "false";
 		const data = await Mentor.create(reqData);
 
-		res.send({ status: 200, error: false, result: "Saved Your Information Succeassfully", message: 'Success' });
+		res.send({ status: 200, error: false, result: "Saved Your Information Successfully", message: 'Success' });
+	} catch (error) {
+		res.send({ status: 400, error: true, result: 'Could not Save Your Information', message: error.message });
+	}
+});
+/* MENTOR PROFILE */
+app.post("/mentee/profile", async (req, res) => {
+	try {
+		const reqData = req.body;
+		reqData.status = "false";
+		const data = await Mentee.create(reqData);
+
+		res.send({ status: 200, error: false, result: "Saved Your Information Successfully", message: 'Success' });
 	} catch (error) {
 		res.send({ status: 400, error: true, result: 'Could not Save Your Information', message: error.message });
 	}
@@ -153,7 +167,63 @@ app.get("/mentor-requests", async (req, res) => {
 		res.send([]);
 	}
 });
-
+/* LIST CATEGORY*/
+app.get("/list/category", async (req, res) => {
+	try {
+		const category_list = await Category.find();
+		res.send(category_list);
+	} catch {
+		res.send([]);
+	}
+});
+/* ADD NEW CATEGORY */
+app.post("/add/category", async (req, res) => {
+	let reqData = req.body;
+	if(reqData.category){
+		try {
+			let old = await Category.findOne({category:reqData.category});
+			if(old){
+				res.send({status: 400, error: true, result: 'Category Already Exists', message: 'Failure'});
+			}
+			const category_list = await Category.create(reqData);
+			res.send({status: 200, error: false, result: 'New Category Added', message: 'Success', data: category_list});
+		} catch(error) {
+			res.send({status: 400, error: true, result: 'Could not add new category', message:error.message, data:reqData.body  });
+		}
+	}else{
+		res.send({status: 500, error: true, result: 'Please Enter Valid Value', message: 'Error', data: "Bad Request"  });
+	}
+	
+});
+/* ADD NEW MENTOR TO CATEGORY */
+app.post("/push/category/mentor", async (req, res) => {
+	let reqData = req.body;
+	if(reqData.category&&reqData.mentor){
+		try {
+			const found = await Category.findOne({category:reqData.category})
+			if(found){
+				const category = await Category.updateOne(
+					{category:reqData.category},
+					{
+						$push : {
+							mentors : reqData.mentor
+						}
+					}
+					);
+				res.send({status: 200, error: false, result: 'Mentor assigned to category', message: 'Success', data: category});
+			}else{
+				res.send({status: 400, error: true, result: 'Category Not Found', message: 'Error'  });
+			}
+			
+			
+		} catch(error) {
+			res.send({status: 400, error: true, result: 'Could not assign Mentor to category', message: 'Error', data: error.message  });
+		}
+	}else{
+		res.send({status: 500, error: true, result: 'Please Enter Valid Value', message: 'Bad Request Error', data: reqData  });
+	}
+	
+});
 /*fetch MENTOR profile*/
 app.post("/mentor", async (req, res) => {
 
@@ -204,6 +274,20 @@ app.post("/mentor-requests/respond", async (req, res) => {
 	}
 
 });
+app.get("/user/overview", async (req, res) => {
+	try{
+		let overview;
+	const mentorCount  = await User.countDocuments({role:"mentor"});
+	const menteeCount = await User.countDocuments({role:"mentee"});
+	overview = {mentorCount, menteeCount};
+	res.send({status: 200 , data:overview, error:false, result:"SUCCESS",message:"SUCCESS"});
 
+	}catch (e){
+		res.send({status: 400 , data:overview, error:true, result:"FAILED",message:e.message});
+	
+	}
+	
+
+});
 
 module.exports = app;

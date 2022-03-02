@@ -23,9 +23,10 @@ const mentorSchema = new mongoose.Schema({
 	instagram: { type: String, default: null },
 	facebook: { type: String, default: null },
 	twitter: { type: String, default: null },
-	profile_pic_source: { type: Buffer, default: null },
-	resume_source: { type: Buffer, default: null },
+	profile_pic_source: {data:Buffer,contentType:String},
+	resume_source: {data:Buffer,contentType:String },
 	status: { type: String, default: null },
+	category: { type: String, default: null },
 });
 
 module.exports = mongoose.model("mentor", mentorSchema);
